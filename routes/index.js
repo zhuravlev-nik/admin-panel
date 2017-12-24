@@ -29,7 +29,29 @@ router.route('/') // root route (campaigns list)
 
 router.route('/api/')
   .all(function(req, res, next){
-     res.json({})
+     let campaignId;
+     if(req.query.cid || req.body.cid){
+       campaignId = req.query.cid || req.body.cid;
+     }
+     let campaign = null;
+     for(let i=0; i<campaignList.length; i++){
+       if(campaignList[i]._id == campaignId){
+         campaign = campaignList[i];
+       }
+     }
+     let result = {};
+
+     if(!campaign){
+       result.err = 'Campaign not found';
+     }else{
+       let banners = campaign.banners;
+       for(let i=0; i<banners.length; i++){
+         if(banners[i].active && !Object.keys(result).length){
+           result = {banner_id: banners[i]._id}
+         }
+       }
+     }
+     res.json(result)
    })
 
 router.route('/((:campaignId)|new)/') // View and edit campaign info, view campaign banners
