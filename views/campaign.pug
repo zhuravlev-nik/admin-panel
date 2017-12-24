@@ -1,0 +1,44 @@
+extends layout
+
+block content
+  .row
+    .col-sm-12
+      h3 Campaign edit
+      form(method='post')
+        .form-group
+          label Campaign name
+          input.form-control(type='text', name='name', value=campaign.name||'')
+        if campaign._id
+          .form-group
+            label Status
+            select.form-control(name='active')
+              option(selected=campaign.active) On
+              option(selected=!campaign.active) Off
+        button.btn.btn-success(type='submit') Save
+        |&nbsp;&nbsp;
+        a.btn.btn-secondary(href='/') Chancel
+  if campaign._id
+    .row
+      .col-sm-12
+        h3 Campaign banners
+        table.table.table-striped
+          thead.thead-dark
+            tr
+              th Name
+              th Status
+              th Actions
+          tbody
+            if campaign.banners && campaign.banners.length
+              each banner in campaign.banners
+                tr
+                  td=banner.name
+                  td=(banner.active)?'On':'Off'
+                  td
+                    a.btn.btn-warning(href='/'+campaign._id+'/'+banner._id+'/') Edit
+                    |&nbsp;
+                    a.btn.btn-danger(href='') Delete
+
+            else
+              tr
+                td(colspan=3) No banners found
+        a.btn.btn-primary(href='/'+campaign._id+'/new/') New banner

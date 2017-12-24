@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  .row
+    .col-sm-12
+      h3 Banner edit
+      form(method='post')
+        .form-group
+          label Campaign name
+          input.form-control(readonly, value=campaign.name)
+        .form-group
+          label Banner name
+          input.form-control(type='text', name='name', value=banner.name||'')
+        if banner._id
+          .form-group
+            label Status
+            select.form-control(name='active')
+              option(selected=banner.active) On
+              option(selected=!banner.active) Off
+        button.btn.btn-success(type='submit') Save
+        |&nbsp;&nbsp;
+        a.btn.btn-secondary(href=baseUrl) Chancel

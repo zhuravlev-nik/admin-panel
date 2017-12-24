@@ -1,0 +1,24 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/css/style.css')
+  body
+    .container
+      .row
+        .col-sm-12
+          h1=title
+      .row
+        .col-sm-12
+          if breadcrumbs && breadcrumbs.length
+            ol.breadcrumb
+              - var path = ''
+              each node,i in breadcrumbs
+                - path += node.path
+                if i<breadcrumbs.length-1
+                  li.breadcrumb-item: a(href=path)=node.name
+                else
+                  li.breadcrumb-item.active=node.name
+
+      block content

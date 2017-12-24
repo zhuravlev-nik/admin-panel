@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  .row
+    .col-sm-12
+      h3 Campaign list
+      table.table.table-striped
+        thead.thead-dark
+          tr
+            th Name
+            th Status
+            th Actions
+        tbody
+          if list && list.length
+            each campaign in list
+              tr
+                td=campaign.name
+                td=(campaign.active)?'On':'Off'
+                td
+                  a.btn.btn-warning(href='/'+campaign._id+'/') Edit
+                  |&nbsp;&nbsp;
+                  a.btn.btn-danger(href='') Delete
+          else
+            tr
+              td(colspan=3) No campaigns found
+      a.btn.btn-primary(href='/new/') New campaign

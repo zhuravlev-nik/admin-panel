@@ -1,0 +1,24 @@
+{
+  "name": "admin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhuravlev-nik/admin-panel.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhuravlev-nik/admin-panel/issues"
+  },
+  "homepage": "https://github.com/zhuravlev-nik/admin-panel#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "mongodb": "^3.0.0",
+    "pug": "^2.0.0-rc.4"
+  }
+}
