@@ -7,13 +7,13 @@ block content
       form(method='post')
         .form-group
           label Campaign name
-          input.form-control(type='text', name='name', value=campaign.name||'')
+          input.form-control(type='text', name='name', value=campaign.name||'', required=true)
         if campaign._id
           .form-group
             label Status
             select.form-control(name='active')
-              option(selected=campaign.active) On
-              option(selected=!campaign.active) Off
+              option(selected=campaign.active, value=1) On
+              option(selected=!campaign.active, value=0) Off
         button.btn.btn-success(type='submit') Save
         |&nbsp;&nbsp;
         a.btn.btn-secondary(href='/') Chancel

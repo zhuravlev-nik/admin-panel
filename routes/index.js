@@ -34,7 +34,6 @@ router.route('/api/')
 
 router.route('/((:campaignId)|new)/') // View and edit campaign info, view campaign banners
   .all(function(req, res, next){
-    console.log(req.params.campaignId);
     res.locals.title = 'Campaign data';
     res.locals.baseUrl = '/'+req.params.campaignId+'/';
     for(let i in campaignList){
@@ -53,6 +52,7 @@ router.route('/((:campaignId)|new)/') // View and edit campaign info, view campa
   .post(function(req, res, next){
     // add or update campaign, default status - false
     // if set campaign status to false, update campaign banners - set active false
+    console.log(req.body);
     res.redirect('/');
   });
 
@@ -82,7 +82,8 @@ router.route('/(:campaignId)/((:bannerId)|new)') // View and edit banner info
   .post(function(req, res, next){
     // add or update banner
     // if all campaign banners statuses is false, set campaign status to false
-    res.redirect('/')
+    console.log(req.body);
+    res.redirect('/'+req.params.campaignId+'/')
   });
 
 module.exports = router;

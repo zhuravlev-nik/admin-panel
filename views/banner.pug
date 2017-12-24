@@ -10,13 +10,13 @@ block content
           input.form-control(readonly, value=campaign.name)
         .form-group
           label Banner name
-          input.form-control(type='text', name='name', value=banner.name||'')
+          input.form-control(type='text', name='name', value=banner.name||'', required=true)
         if banner._id
           .form-group
             label Status
             select.form-control(name='active')
-              option(selected=banner.active) On
-              option(selected=!banner.active) Off
+              option(selected=banner.active, value=1) On
+              option(selected=!banner.active, value=0) Off
         button.btn.btn-success(type='submit') Save
         |&nbsp;&nbsp;
         a.btn.btn-secondary(href=baseUrl) Chancel

@@ -1,11 +1,14 @@
 const
   express = require('express'),
   app = express(),
-  path = require('path');
+  path = require('path'),
+  bodyParser = require('body-parser');
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', require('./routes/index'));
@@ -26,5 +29,5 @@ app.use(function(err, req, res, next) {
 });
 
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+  console.log('Listening on port 3000!');
 });
