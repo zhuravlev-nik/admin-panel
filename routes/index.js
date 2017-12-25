@@ -24,27 +24,27 @@ router.route('/') // root route (campaigns list)
   });
 
 router.route('/api/')
-  .all(function(req, res, next) {
+  .all(async (req, res, next) => {
     let campaignId;
     if (req.query.cid || req.body.cid) {
       campaignId = req.query.cid || req.body.cid;
     }
     let campaign = null;
-    for (let i = 0; i < campaignList.length; i++) {
-      if (campaignList[i]._id == campaignId) {
-        campaign = campaignList[i];
-      }
-    }
     let result = {};
-
-    if (!campaign) {
-      result.err = 'Campaign not found';
+    if (!ObjectId.isValid(campaignId)) {
+      result = {
+        'err': 'Wrong campaignId format'
+      };
     } else {
-      let banners = campaign.banners;
-      for (let i = 0; i < banners.length; i++) {
-        if (banners[i].active && !Object.keys(result).length) {
-          result = {
-            banner_id: banners[i]._id
+      campaign = await req.db.collection('campaigns').findOne({
+        _id: ObjectId(campaignId)
+      });
+      if (campaign.banners) {
+        let banners = campaign.banners;
+        for (let i in banners) {
+          if (banners[i].active) {
+            result.banner_id = banners[i]._id;
+            result.settings = banners[i].options
           }
         }
       }
@@ -137,7 +137,7 @@ router.route('/(:campaignId)/((:bannerId)|new)') // View and edit banner info
     if (!banner._id) {
       banner._id = ObjectId();
       banner.name = req.body.name;
-      banner.status = false;
+      banner.active = false;
       banner.options = {};
       banner.created = new Date();
       await req.db.collection('campaigns').update({
