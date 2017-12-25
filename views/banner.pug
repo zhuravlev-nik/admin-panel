@@ -3,20 +3,20 @@ extends layout
 block content
   .row
     .col-sm-12
-      h3 Banner edit
+      h3 Редактирование баннера
       form(method='post')
         .form-group
-          label Campaign name
+          label Название кампании
           input.form-control(readonly, value=campaign.name)
         .form-group
-          label Banner name
+          label Название баннера
           input.form-control(type='text', name='name', value=banner.name||'', required=true)
         if banner._id
           .form-group
-            label Status
+            label Статус
             select.form-control(name='active')
-              option(selected=banner.active, value=1) On
-              option(selected=!banner.active, value=0) Off
-        button.btn.btn-success(type='submit') Save
+              option(selected=banner.active, value=1) Вкл
+              option(selected=!banner.active, value=0) Выкл
+        button.btn.btn-success(type='submit') Сохранить
         |&nbsp;&nbsp;
-        a.btn.btn-secondary(href=baseUrl) Chancel
+        a.btn.btn-secondary(href=baseUrl) Отменить

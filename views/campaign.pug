@@ -3,42 +3,44 @@ extends layout
 block content
   .row
     .col-sm-12
-      h3 Campaign edit
+      h3 Редактирование кампании
       form(method='post')
         .form-group
-          label Campaign name
+          label Название
           input.form-control(type='text', name='name', value=campaign.name||'', required=true)
         if campaign._id
           .form-group
             label Status
             select.form-control(name='active')
-              option(selected=campaign.active, value=1) On
-              option(selected=!campaign.active, value=0) Off
-        button.btn.btn-success(type='submit') Save
+              option(selected=campaign.active, value=1) Вкл
+              option(selected=!campaign.active, value=0) Выкл
+        button.btn.btn-success(type='submit') Сохранить
         |&nbsp;&nbsp;
-        a.btn.btn-secondary(href='/') Chancel
+        a.btn.btn-secondary(href='/') Отменить
   if campaign._id
     .row
       .col-sm-12
-        h3 Campaign banners
+        h3 Список баннеров кампании
         table.table.table-striped
           thead.thead-dark
             tr
-              th Name
-              th Status
-              th Actions
+              th Базвание
+              th Статус
+              th Датоа создания
+              th Действия
           tbody
             if campaign.banners && campaign.banners.length
               each banner in campaign.banners
                 tr
                   td=banner.name
                   td=(banner.active)?'On':'Off'
+                  td=banner.created
                   td
-                    a.btn.btn-warning(href='/'+campaign._id+'/'+banner._id+'/') Edit
-                    |&nbsp;
-                    a.btn.btn-danger(href='') Delete
+                    a.btn.btn-warning(href='/'+campaign._id+'/'+banner._id+'/') Редактировать
+                    //|&nbsp;
+                    //a.btn.btn-danger(href='') Delete
 
             else
               tr
-                td(colspan=3) No banners found
-        a.btn.btn-primary(href='/'+campaign._id+'/new/') New banner
+                td(colspan=3) Баннеры не найдены
+        a.btn.btn-primary(href='/'+campaign._id+'/new/') Новый баннер

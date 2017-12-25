@@ -3,24 +3,26 @@ extends layout
 block content
   .row
     .col-sm-12
-      h3 Campaign list
+      h3 Список кампаний
       table.table.table-striped
         thead.thead-dark
           tr
-            th Name
-            th Status
-            th Actions
+            th Название
+            th Статус
+            th Дата создания
+            th Действия
         tbody
           if list && list.length
             each campaign in list
               tr
                 td=campaign.name
-                td=(campaign.active)?'On':'Off'
+                td=(campaign.active)?'Вкл':'Выкл'
+                td=campaign.created
                 td
-                  a.btn.btn-warning(href='/'+campaign._id+'/') Edit
-                  |&nbsp;&nbsp;
-                  a.btn.btn-danger(href='') Delete
+                  a.btn.btn-warning(href='/'+campaign._id+'/') Редактировать
+                  //|&nbsp;&nbsp;
+                  //a.btn.btn-danger(href='') Delete
           else
             tr
-              td(colspan=3) No campaigns found
-      a.btn.btn-primary(href='/new/') New campaign
+              td(colspan=3) Кампании не найдены
+      a.btn.btn-primary(href='/new/') Новая кампания

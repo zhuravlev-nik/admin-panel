@@ -1,111 +1,165 @@
 const
   express = require('express'),
-  router = express.Router();
+  router = express.Router(),
+  ObjectId = require('mongodb').ObjectID;
 
-// while not connested to mongodb
-let campaignList = [
-  {_id:'111',name: 'Campaign 1', active: true, created: new Date, banners: [{_id: '111', name: 'Banner 1_1', active: true}, {_id: '222', name: 'Banner 1_2', active: false}, {_id: '333', name: 'Banner 1_3', active: true}]},
-  {_id:'222',name: 'Campaign 2', active: false, created: new Date, banners: [{_id: '111', name: 'Banner 2_1', active: true}, {_id: '222', name: 'Banner 2_2', active: true}]},
-  {_id:'333',name: 'Campaign 3', active: true, created: new Date, banners: [{_id: '111', name: 'Banner 3_1', active: true}, {_id: '222', name: 'Banner 3_2', active: true}]},
-  {_id:'444',name: 'Campaign 4', active: true, created: new Date, banners: [{_id: '111', name: 'Banner 4_1', active: true}, {_id: '222', name: 'Banner 4_2', active: true}]},
-  {_id:'555',name: 'Campaign 5', active: true, created: new Date, banners: [{_id: '111', name: 'Banner 5_1', active: true}, {_id: '222', name: 'Banner 5_2', active: true}]}
-];
- 
 
-router.use(function(req, res, next){
-  res.locals.breadcrumbs = [{name:'Main',path:'/'}];
+router.use(function(req, res, next) {
+  res.locals.breadcrumbs = [{
+    name: 'Главная',
+    path: '/'
+  }];
   return next();
 });
 
 router.route('/') // root route (campaigns list)
-  .all(function(req, res, next){
-    res.locals.title = 'Campaign list';
-    res.locals.list = campaignList;
+  .all(async (req, res, next) => {
+    let campaigns = await req.db.collection('campaigns').find().toArray();
+    res.locals.title = 'Список кампаний';
+    res.locals.list = campaigns;
     return next();
   })
-  .get(function(req, res, next){
+  .get(function(req, res, next) {
     res.render('index');
   });
 
 router.route('/api/')
-  .all(function(req, res, next){
-     let campaignId;
-     if(req.query.cid || req.body.cid){
-       campaignId = req.query.cid || req.body.cid;
-     }
-     let campaign = null;
-     for(let i=0; i<campaignList.length; i++){
-       if(campaignList[i]._id == campaignId){
-         campaign = campaignList[i];
-       }
-     }
-     let result = {};
-
-     if(!campaign){
-       result.err = 'Campaign not found';
-     }else{
-       let banners = campaign.banners;
-       for(let i=0; i<banners.length; i++){
-         if(banners[i].active && !Object.keys(result).length){
-           result = {banner_id: banners[i]._id}
-         }
-       }
-     }
-     res.json(result)
-   })
-
-router.route('/((:campaignId)|new)/') // View and edit campaign info, view campaign banners
-  .all(function(req, res, next){
-    res.locals.title = 'Campaign data';
-    res.locals.baseUrl = '/'+req.params.campaignId+'/';
-    for(let i in campaignList){
-      if(campaignList[i]._id == req.params.campaignId){
-        res.locals.campaign = campaignList[i];
+  .all(function(req, res, next) {
+    let campaignId;
+    if (req.query.cid || req.body.cid) {
+      campaignId = req.query.cid || req.body.cid;
+    }
+    let campaign = null;
+    for (let i = 0; i < campaignList.length; i++) {
+      if (campaignList[i]._id == campaignId) {
+        campaign = campaignList[i];
       }
     }
-    if(!res.locals.campaign) res.locals.campaign = {};
-    res.locals.breadcrumbs.push({name: res.locals.campaign.name || 'New campaign', path: req.params.campaignId+'/'});
+    let result = {};
 
+    if (!campaign) {
+      result.err = 'Campaign not found';
+    } else {
+      let banners = campaign.banners;
+      for (let i = 0; i < banners.length; i++) {
+        if (banners[i].active && !Object.keys(result).length) {
+          result = {
+            banner_id: banners[i]._id
+          }
+        }
+      }
+    }
+    res.json(result)
+  })
+
+router.route('/((:campaignId)|new)/') // View and edit campaign info, view campaign banners
+  .all(async (req, res, next) => {
+    res.locals.title = 'Информация о кампании';
+    res.locals.baseUrl = '/' + req.params.campaignId + '/';
+    let campaign;
+    if (ObjectId.isValid(req.params.campaignId)) {
+      campaign = await req.db.collection('campaigns').findOne({
+        _id: ObjectId(req.params.campaignId)
+      });
+    }
+    res.locals.campaign = campaign || {};
+    res.locals.breadcrumbs.push({
+      name: res.locals.campaign.name || 'Новая кампания',
+      path: req.params.campaignId + '/'
+    });
     return next();
   })
-  .get(function(req, res, next){
+  .get(function(req, res, next) {
     res.render('campaign');
   })
-  .post(function(req, res, next){
-    // add or update campaign, default status - false
-    // if set campaign status to false, update campaign banners - set active false
-    console.log(req.body);
+  .post(async function(req, res, next) {
+    let campaign = res.locals.campaign;
+    if (!campaign._id) {
+      campaign.name = req.body.name;
+      campaign.active = false;
+      campaign.created = new Date();
+      let result = await req.db.collection('campaigns').insert(campaign);
+    } else {
+      let query = {};
+      let active = (req.body.active == 1) ? true : false;
+      if (campaign.name !== req.body.name) query.name = req.body.name;
+      if (campaign.active !== active) {
+        query.active = active;
+        query.banners = [];
+        campaign.banners.forEach(function(banner) {
+          banner.active = active;
+          query.banners.push(banner);
+        });
+      }
+      if (Object.keys(query).length) {
+        let result = await req.db.collection('campaigns').update({
+          _id: campaign._id
+        }, {
+          $set: query
+        });
+      }
+    }
     res.redirect('/');
   });
 
 router.route('/(:campaignId)/((:bannerId)|new)') // View and edit banner info
-  .all(function(req, res, next){
-    res.locals.title = 'Banner info';
-    res.locals.baseUrl = '/'+req.params.campaignId+'/';
-    for(let i in campaignList){
-      if(campaignList[i]._id == req.params.campaignId){
-        res.locals.campaign = campaignList[i];
-        let banners = campaignList[i].banners;
-        for(let j in banners){
-          if(banners[j]._id ==  req.params.bannerId){
-            res.locals.banner = banners[j];
-          }
-        }
-        if(!res.locals.banner) res.locals.banner = {};
+  .all(async (req, res, next) => {
+    res.locals.title = 'Информация о баннере';
+    res.locals.baseUrl = '/' + req.params.campaignId + '/';
+
+    let campaign = await req.db.collection('campaigns').findOne({
+      _id: ObjectId(req.params.campaignId)
+    });
+    let banners = campaign.banners;
+    for (let i in banners) {
+      if (banners[i]._id == req.params.bannerId) {
+        res.locals.banner = banners[i];
       }
     }
-    res.locals.breadcrumbs.push({name: res.locals.campaign.name || 'New campaign', path: req.params.campaignId+'/'});
-    res.locals.breadcrumbs.push({name: res.locals.banner.name || 'New banner', path: req.params.bannerId+'/'});
+    if (!res.locals.banner) res.locals.banner = {};
+
+    res.locals.breadcrumbs.push({
+      name: campaign.name || 'Новая кампания',
+      path: campaign._id + '/'
+    });
+    res.locals.breadcrumbs.push({
+      name: res.locals.banner.name || 'Новый баннер',
+      path: req.params.bannerId + '/'
+    });
+    res.locals.campaign = campaign;
     return next();
   })
-  .get(function(req, res, next){
+  .get(function(req, res, next) {
     res.render('banner')
   })
-  .post(function(req, res, next){
-    // add or update banner
-    // if all campaign banners statuses is false, set campaign status to false
-    console.log(req.body);
-    res.redirect('/'+req.params.campaignId+'/')
+  .post(async function(req, res, next) {
+    let banner = res.locals.banner;
+    if (!banner._id) {
+      banner._id = ObjectId();
+      banner.name = req.body.name;
+      banner.status = false;
+      banner.options = {};
+      banner.created = new Date();
+      await req.db.collection('campaigns').update({
+        _id: ObjectId(req.params.campaignId)
+      }, {
+        $push: {
+          banners: banner
+        }
+      });
+
+    } else {
+      let result = await req.db.collection('campaigns').updateOne({
+        "_id": ObjectId(req.params.campaignId),
+        "banners._id": ObjectId(req.params.bannerId)
+      }, {
+        "$set": {
+          "banners.$.active": (req.body.active == 1) ? true : false,
+          "banners.$.name": req.body.name
+        }
+      })
+    }
+    res.redirect('/' + req.params.campaignId + '/')
   });
 
 module.exports = router;

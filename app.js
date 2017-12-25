@@ -4,12 +4,18 @@ const
   path = require('path'),
   bodyParser = require('body-parser');
 
+app.use(require('./lib/db'));
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(express.static(path.join(__dirname, 'public')));
+
+
 
 app.use('/', require('./routes/index'));
 
@@ -28,6 +34,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(3000, function () {
+app.listen(3000, function() {
   console.log('Listening on port 3000!');
 });
